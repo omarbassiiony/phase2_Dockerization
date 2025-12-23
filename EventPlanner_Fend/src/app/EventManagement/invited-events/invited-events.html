@@ -1,0 +1,164 @@
+<div class="invited-events-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <span class="back-icon">←</span> Back to Home
+      </button>
+      <h2 class="page-title">Events I'm Invited To</h2>
+    </div>
+    <div class="header-right">
+      <span class="user-info">{{ currentUser?.username }}</span>
+      <button class="btn-logout" (click)="logout()">
+        <span class="logout-icon">🚪</span> Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading your invitations...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && events.length === 0" class="empty-state">
+      <div class="empty-icon">✉️</div>
+      <h2>No Invitations Yet</h2>
+      <p>You haven't been invited to any events yet. Check back later!</p>
+      <button class="btn btn-primary" (click)="goBack()">
+        Go Back Home
+      </button>
+    </div>
+
+    <!-- Events Grid -->
+    <div *ngIf="!isLoading && events.length > 0" class="events-grid">
+      <div *ngFor="let event of events" class="event-card">
+        <!-- Event Header -->
+        <div class="event-header">
+          <h3 class="event-title">{{ event.title }}</h3>
+          <span class="attendee-badge">Attendee</span>
+        </div>
+
+        <!-- Organizer Info -->
+        <div class="organizer-info">
+          <span class="organizer-label">Organized by:</span>
+          <span class="organizer-name">{{ event.organizerName }}</span>
+        </div>
+
+        <!-- Event Details -->
+        <div class="event-details">
+          <div class="detail-item">
+            <span class="detail-icon">📆</span>
+            <span>{{ formatDate(event.date) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">🕒</span>
+            <span>{{ formatTime(event.time) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">📍</span>
+            <span>{{ event.location }}</span>
+          </div>
+        </div>
+
+        <!-- Event Description -->
+        <div class="event-description">
+          <p>{{ event.description }}</p>
+        </div>
+
+        <!-- Current Status -->
+        <div class="status-section">
+          <span class="status-label">Your RSVP:</span>
+          <div class="current-status" [style.background-color]="getStatusColor(event.userStatus)">
+            <span class="status-icon">{{ getStatusIcon(event.userStatus) }}</span>
+            <span class="status-text">{{ getStatusText(event.userStatus) }}</span>
+          </div>
+        </div>
+
+        <!-- Event Actions -->
+        <div class="event-actions">
+          <button class="btn-action btn-update-status" (click)="openStatusModal(event)">
+            <span class="action-icon">📝</span>
+            Update RSVP
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Status Update Modal -->
+  <div *ngIf="showStatusModal" class="modal-overlay" (click)="closeStatusModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Update Your RSVP</h3>
+        <button class="btn-close" (click)="closeStatusModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-subtitle">Event: <strong>{{ selectedEvent?.title }}</strong></p>
+        <p class="modal-description">Let the organizer know if you'll be attending</p>
+
+        <!-- Status Options -->
+        <div class="status-options">
+          <label class="status-option" [class.selected]="selectedStatus === 'going'">
+            <input 
+              type="radio" 
+              name="status" 
+              value="going" 
+              [(ngModel)]="selectedStatus"
+            />
+            <div class="option-content going">
+              <span class="option-icon">✓</span>
+              <div class="option-text">
+                <span class="option-label">Going</span>
+                <span class="option-description">I'll be there!</span>
+              </div>
+            </div>
+          </label>
+
+          <label class="status-option" [class.selected]="selectedStatus === 'maybe'">
+            <input 
+              type="radio" 
+              name="status" 
+              value="maybe" 
+              [(ngModel)]="selectedStatus"
+            />
+            <div class="option-content maybe">
+              <span class="option-icon">?</span>
+              <div class="option-text">
+                <span class="option-label">Maybe</span>
+                <span class="option-description">I'm not sure yet</span>
+              </div>
+            </div>
+          </label>
+
+          <label class="status-option" [class.selected]="selectedStatus === 'not going'">
+            <input 
+              type="radio" 
+              name="status" 
+              value="not going" 
+              [(ngModel)]="selectedStatus"
+            />
+            <div class="option-content not-going">
+              <span class="option-icon">✗</span>
+              <div class="option-text">
+                <span class="option-label">Not Going</span>
+                <span class="option-description">I can't make it</span>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeStatusModal()">
+          Cancel
+        </button>
+        <button class="btn btn-primary" (click)="updateStatus()">
+          Update status
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

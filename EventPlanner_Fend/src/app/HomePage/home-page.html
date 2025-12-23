@@ -1,0 +1,55 @@
+<div class="home-container">
+  <header class="header">
+    <div class="logo">
+      <h2>Event Planner</h2>
+    </div>
+    <div class="user-section">
+      <span class="welcome-text">Welcome, <strong>{{ currentUser?.username }}</strong>!</span>
+      <button class="btn-logout" (click)="logout()">
+        <span class="logout-icon">🚪</span> Logout
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="hero-section">
+      <h1 class="title">What would you like to do today?</h1>
+      <p class="subtitle">Manage your events and invitations effortlessly</p>
+    </div>
+
+    <div class="action-buttons">
+      <div class="action-card" (click)="navigateToCreateEvent()">
+        <div class="card-icon create-icon">
+          <span>➕</span>
+        </div>
+        <h3 class="card-title">Create New Event</h3>
+        <p class="card-description">Plan and organize a new event with all the details</p>
+      </div>
+
+      <div class="action-card" (click)="navigateToMyEvents()">
+        <div class="card-icon my-events-icon">
+          <span>📋</span>
+        </div>
+        <h3 class="card-title">My Events</h3>
+        <p class="card-description">View, manage, and invite attendees to your events</p>
+      </div>
+
+      <div class="action-card" (click)="navigateToInvitedEvents()">
+        <div class="card-icon invited-icon">
+          <span>✉️</span>
+        </div>
+        <h3 class="card-title">Events I'm Invited To</h3>
+        <p class="card-description">Browse events where you've been invited as an attendee</p>
+      </div>
+
+      <div class="action-card" (click)="navigateToAllEvents()">
+        <div class="card-icon all-events-icon">
+          <span>🌐</span>
+        </div>
+        <h3 class="card-title">All Events</h3>
+        <p class="card-description">Search and manage all your events in one place</p>
+      </div>
+    </div>
+  </main>
+
+</div>

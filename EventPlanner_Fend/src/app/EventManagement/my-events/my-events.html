@@ -1,0 +1,170 @@
+<div class="my-events-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <span class="back-icon">←</span> Back to Home
+      </button>
+      <h2 class="page-title">My Events</h2>
+    </div>
+    <div class="header-right">
+      <span class="user-info">{{ currentUser?.username }}</span>
+      <button class="btn-logout" (click)="logout()">
+        <span class="logout-icon">🚪</span> Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading your events...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && events.length === 0" class="empty-state">
+      <div class="empty-icon">📅</div>
+      <h2>No Events Yet</h2>
+      <p>You haven't created any events yet. Start by creating your first event!</p>
+      <button class="btn btn-primary" (click)="createNewEvent">
+        ➕ Create Your First Event
+      </button>
+    </div>
+
+    <!-- Events Grid -->
+    <div *ngIf="!isLoading && events.length > 0" class="events-grid">
+      <div *ngFor="let event of events" class="event-card">
+        <!-- Event Header -->
+        <div class="event-header">
+          <h3 class="event-title">{{ event.title }}</h3>
+          <span class="organizer-badge">Organizer</span>
+        </div>
+
+        <!-- Event Details -->
+        <div class="event-details">
+          <div class="detail-item">
+            <span class="detail-icon">📆</span>
+            <span>{{ formatDate(event.date) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">🕒</span>
+            <span>{{ formatTime(event.time) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">📍</span>
+            <span>{{ event.location }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">👥</span>
+            <span>{{ event.participantCount }} participant(s)</span>
+          </div>
+        </div>
+
+        <!-- Event Description -->
+        <div class="event-description">
+          <p>{{ event.description }}</p>
+        </div>
+
+        <!-- Event Actions -->
+        <div class="event-actions">
+          <button class="btn-action btn-view" (click)="viewEvent(event)" title="View Participants">
+            <span class="action-icon">👁️</span>
+            View Participants
+          </button>
+          <button class="btn-action btn-invite" (click)="openInviteModal(event)" title="Invite Users">
+            <span class="action-icon">✉️</span>
+            Invite
+          </button>
+          <button class="btn-action btn-delete" (click)="deleteEvent(event)" title="Delete Event">
+            <span class="action-icon">🗑️</span>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Invite Modal -->
+  <div *ngIf="showInviteModal" class="modal-overlay" (click)="closeInviteModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Invite User to Event</h3>
+        <button class="btn-close" (click)="closeInviteModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-subtitle">Event: <strong>{{ selectedEvent?.title }}</strong></p>
+        <div class="form-group">
+          <label for="inviteEmail" class="form-label">
+            <span class="label-icon">📧</span>
+            User Email
+          </label>
+          <input
+            type="email"
+            id="inviteEmail"
+            [(ngModel)]="inviteEmail"
+            class="form-input"
+            placeholder="Enter user's email address"
+            [disabled]="isInviting"
+          />
+          <small class="form-hint">Enter the email of the user you want to invite</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeInviteModal()" [disabled]="isInviting">
+          Cancel
+        </button>
+        <button class="btn btn-primary" (click)="inviteUser()" [disabled]="isInviting">
+          <span *ngIf="!isInviting">Send Invitation</span>
+          <span *ngIf="isInviting">Sending...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Participants Modal -->
+  <div *ngIf="showParticipantsModal" class="modal-overlay" (click)="closeParticipantsModal()">
+    <div class="modal modal-large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Event Participants</h3>
+        <button class="btn-close" (click)="closeParticipantsModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-subtitle">Event: <strong>{{ selectedEvent?.title }}</strong></p>
+        
+        <!-- Participants List -->
+        <div *ngIf="participants.length === 0" class="empty-participants">
+          <p>No participants yet. Start inviting users!</p>
+        </div>
+
+        <div *ngIf="participants.length > 0" class="participants-list">
+          <div *ngFor="let participant of participants" class="participant-item">
+            <div class="participant-info">
+              <div class="participant-avatar">
+                {{ participant.username.charAt(0).toUpperCase() }}
+              </div>
+              <div class="participant-details">
+                <p class="participant-name">
+                  {{ participant.username }}
+                  <span *ngIf="participant.role === 'organizer'" class="role-badge organizer">Organizer</span>
+                  <span *ngIf="participant.role === 'attendee'" class="role-badge attendee">Attendee</span>
+                </p>
+                <p class="participant-email">{{ participant.email }}</p>
+              </div>
+            </div>
+            <div class="participant-status" [style.background-color]="getStatusColor(participant.status)">
+              <span class="status-icon">{{ getStatusIcon(participant.status) }}</span>
+              <span class="status-text">{{ participant.status }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" (click)="closeParticipantsModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

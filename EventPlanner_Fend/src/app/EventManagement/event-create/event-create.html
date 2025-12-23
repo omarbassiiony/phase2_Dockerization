@@ -1,0 +1,143 @@
+<div class="create-event-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <span class="back-icon">←</span> Back to Home
+      </button>
+      <h2 class="page-title">Create New Event</h2>
+    </div>
+    <div class="header-right">
+      <span class="user-info">{{ currentUser?.username }}</span>
+      <button class="btn-logout" (click)="logout()">
+        <span class="logout-icon">🚪</span> Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="form-container">
+      <div class="form-header">
+        <div class="form-icon">📅</div>
+        <h1>Plan Your Event</h1>
+        <p>Fill in the details below to create your event</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="event-form">
+        <!-- Event Title -->
+        <div class="form-group">
+          <label for="title" class="form-label">
+            <span class="label-icon">📌</span>
+            Event Title *
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            [(ngModel)]="event.title"
+            class="form-input"
+            placeholder="Enter event title (e.g., Team Building Workshop)"
+            maxlength="100"
+            required
+          />
+          <small class="form-hint">{{ event.title.length }}/100 characters</small>
+        </div>
+
+        <!-- Date and Time Row -->
+        <div class="form-row">
+          <!-- Event Date -->
+          <div class="form-group">
+            <label for="date" class="form-label">
+              <span class="label-icon">📆</span>
+              Event Date *
+            </label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              [(ngModel)]="event.date"
+              [min]="minDate"
+              class="form-input"
+              required
+            />
+          </div>
+
+          <!-- Event Time -->
+          <div class="form-group">
+            <label for="time" class="form-label">
+              <span class="label-icon">🕒</span>
+              Event Time *
+            </label>
+            <input
+              type="time"
+              id="time"
+              name="time"
+              [(ngModel)]="event.time"
+              class="form-input"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Event Location -->
+        <div class="form-group">
+          <label for="location" class="form-label">
+            <span class="label-icon">📍</span>
+            Location *
+          </label>
+          <input
+            type="text"
+            id="location"
+            name="location"
+            [(ngModel)]="event.location"
+            class="form-input"
+            placeholder="Enter event location (e.g., Conference Room A, 123 Main St)"
+            maxlength="200"
+            required
+          />
+          <small class="form-hint">{{ event.location.length }}/200 characters</small>
+        </div>
+
+        <!-- Event Description -->
+        <div class="form-group">
+          <label for="description" class="form-label">
+            <span class="label-icon">📝</span>
+            Description *
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            [(ngModel)]="event.description"
+            class="form-textarea"
+            placeholder="Describe your event... (What's it about? What should attendees know?)"
+            rows="6"
+            maxlength="1000"
+            required
+          ></textarea>
+          <small class="form-hint">{{ event.description.length }}/1000 characters</small>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="goBack()"
+            [disabled]="isLoading"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isLoading"
+          >
+            <span *ngIf="!isLoading">✓ Create Event</span>
+            <span *ngIf="isLoading">Creating...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>

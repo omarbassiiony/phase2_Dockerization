@@ -1,0 +1,166 @@
+<div class="all-events-container">
+  <header class="header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <span class="back-icon">←</span> Back to Home
+      </button>
+      <h2 class="page-title">All Events</h2>
+    </div>
+    <div class="header-right">
+      <span class="user-info">{{ currentUser?.username }}</span>
+      <button class="btn-logout" (click)="logout()">
+        <span class="logout-icon">🚪</span> Logout
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="filter-section">
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search events by title, description, location, or organizer..."
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange()"
+        />
+      </div>
+
+      <div class="filters-container">
+        <div class="filter-group">
+          <label class="filter-label">Role:</label>
+          <select class="filter-select" [(ngModel)]="filterRole" (change)="onFilterChange()">
+            <option value="all">All Roles</option>
+            <option value="organizer">Organizer</option>
+            <option value="attendee">Attendee</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Status:</label>
+          <select class="filter-select" [(ngModel)]="filterStatus" (change)="onFilterChange()">
+            <option value="all">All Statuses</option>
+            <option value="going">Going</option>
+            <option value="maybe">Maybe</option>
+            <option value="not going">Not Going</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Sort By:</label>
+          <select class="filter-select" [(ngModel)]="sortBy" (change)="onFilterChange()">
+            <option value="date">Date</option>
+            <option value="title">Title</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="results-info">
+        <span class="results-count">{{ filteredEvents.length }} event(s) found</span>
+      </div>
+    </div>
+
+    <div *ngIf="isLoading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading all events...</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredEvents.length === 0 && searchQuery === ''" class="empty-state">
+      <div class="empty-icon">🌐</div>
+      <h2>No Events Yet</h2>
+      <p>You don't have any events. Start by creating or getting invited to one!</p>
+      <button class="btn btn-primary" (click)="goBack()">
+        Go Back Home
+      </button>
+    </div>
+
+    <div *ngIf="!isLoading && filteredEvents.length === 0 && searchQuery !== ''" class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h2>No Results Found</h2>
+      <p>Try adjusting your search or filters</p>
+      <button class="btn btn-secondary" (click)="searchQuery = ''; onSearchChange()">
+        Clear Search
+      </button>
+    </div>
+
+    <div *ngIf="!isLoading && filteredEvents.length > 0" class="events-grid">
+      <div *ngFor="let event of filteredEvents" class="event-card">
+        <div class="event-header">
+          <h3 class="event-title">{{ event.title }}</h3>
+          <span 
+            class="role-badge" 
+            [style.background]="getRoleBadgeColor(event.userRole)">
+            {{ event.userRole === 'organizer' ? 'Organizer' : 'Attendee' }}
+          </span>
+        </div>
+
+        <div *ngIf="event.userRole === 'attendee'" class="organizer-info">
+          <span class="organizer-label">Organized by:</span>
+          <span class="organizer-name">{{ event.organizerName }}</span>
+        </div>
+
+        <div *ngIf="event.userRole === 'organizer'" class="participant-info">
+          <span class="participant-icon">👥</span>
+          <span>{{ event.participantCount }} participant(s)</span>
+        </div>
+
+        <div class="event-details">
+          <div class="detail-item">
+            <span class="detail-icon">📆</span>
+            <span>{{ formatDate(event.date) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">🕒</span>
+            <span>{{ formatTime(event.time) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">📍</span>
+            <span>{{ event.location }}</span>
+          </div>
+        </div>
+
+        <div class="event-description">
+          <p>{{ event.description }}</p>
+        </div>
+
+        <div *ngIf="event.userRole === 'attendee'" class="status-section">
+          <span class="status-label">Your RSVP:</span>
+          <div class="status-buttons">
+            <button 
+              class="status-btn"
+              [class.active]="event.userStatus === 'going'"
+              [style.background-color]="event.userStatus === 'going' ? '#4caf50' : ''"
+              (click)="quickUpdateStatus(event, 'going')"
+              title="Going">
+              ✓
+            </button>
+            <button 
+              class="status-btn"
+              [class.active]="event.userStatus === 'maybe'"
+              [style.background-color]="event.userStatus === 'maybe' ? '#ff9800' : ''"
+              (click)="quickUpdateStatus(event, 'maybe')"
+              title="Maybe">
+              ?
+            </button>
+            <button 
+              class="status-btn"
+              [class.active]="event.userStatus === 'not going'"
+              [style.background-color]="event.userStatus === 'not going' ? '#f44336' : ''"
+              (click)="quickUpdateStatus(event, 'not going')"
+              title="Not Going">
+              ✗
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="event.userRole === 'attendee' && event.userStatus" class="current-status-display">
+          <div class="status-badge" [style.background-color]="getStatusColor(event.userStatus)">
+            <span class="status-icon">{{ getStatusIcon(event.userStatus) }}</span>
+            <span class="status-text">{{ event.userStatus }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
