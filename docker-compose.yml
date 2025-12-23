@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql-db:
+    build:
+      context: ./database      # Folder containing Dockerfile & init.sql
+      dockerfile: Dockerfile
+    container_name: Eventplanner_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: O1q2w1212@@@
+      MYSQL_DATABASE: authdb
+      MYSQL_USER: eventplanner
+      MYSQL_PASSWORD: eventplanner123
+    ports:
+    - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - eventplanner-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+
+  # Go Backend
+  backend:
+    build:
+      context: ./EventPlanner_Bend
+      dockerfile: Dockerfile
+    container_name: EventPlanner_Bend
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    networks:
+      - eventplanner-network
+    environment:
+      - DB_HOST=Eventplanner_mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=O1q2w1212@@@
+      - DB_NAME=authdb
+
+  # Angular Frontend
+  frontend:
+    build:
+      context: ./EventPlanner_Fend
+      dockerfile: Dockerfile
+    container_name: EventPlanner_Fend
+    restart: always
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - eventplanner-network
+
+# Volumes for data persistence
+volumes:
+  mysql-data:
+    driver: local
+
+# Network for container communication
+networks:
+  eventplanner-network:
+    driver: bridge
